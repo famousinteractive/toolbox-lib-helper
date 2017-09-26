@@ -45,19 +45,128 @@ if (! function_exists('extractExtension')) {
 }
 
 if (! function_exists('getDateDifferenceFromNow')) {
+    /**
+     * @param $date
+     * @return array
+     */
     function getDateDifferenceFromNow( $date) {
         $datetime1 = new DateTime();
-
         $datetime2 = new DateTime($date);
-
         $difference = $datetime1->diff($datetime2);
-
         return (array) $difference;
     }
 }
 
 if(! function_exists('formatDateToUser')) {
+    /**
+     * @param $date
+     * @param string $format
+     * @return false|string
+     */
     function formatDateToUser($date, $format='d/m/Y H:i') {
         return date($format, strtotime($date));
+    }
+}
+
+if(! function_exists('generateRandomString')) {
+    /**
+     * @param $lenght
+     * @param string $charInput
+     * @return string
+     */
+    function generateRandomString($lenght, $charInput = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789') {
+        srand((double)microtime()*1000000);
+        $string = '';
+        for($i=0; $i<$lenght; $i++) {
+            $string.= $charInput[rand()%strlen($charInput)];
+        }
+        return $string;
+    }
+}
+
+if(! function_exists('reversibleEncryption')) {
+    /**
+     * @param array $data
+     * @param null $key
+     * @return string
+     */
+    function reversibleEncryption(array $data, $key=null) {
+        $hashids = new \Hashids\Hashids( is_null($key) ? env('APP_KEY') : $key );
+        return $hashids->encode($data);
+    }
+}
+
+if(! function_exists('reversibleDecryption')) {
+    /**
+     * @param $encryptedString
+     * @param null $key
+     * @return array
+     */
+    function reversibleDecryption($encryptedString, $key=null) {
+        $hashids = new \Hashids\Hashids( is_null($key) ? env('APP_KEY') : $key );
+        return $hashids = $hashids->decode($encryptedString);
+    }
+}
+
+if(! function_exists('antiSpamEmailEncode')) {
+    /**
+     * @param string $email
+     * @param string $linkText
+     * @param string $attrs
+     * @return string
+     */
+    function antiSpamEmailEncode($email = 'info@domain.com', $linkText = 'Contact Us', $attrs = 'class="emailencoder"')
+    {
+        $email = str_replace('@', '&#64;', $email);
+        $email = str_replace('.', '&#46;', $email);
+        $email = str_split($email, 5);
+
+        $linkText = str_replace('@', '&#64;', $linkText);
+        $linkText = str_replace('.', '&#46;', $linkText);
+        $linkText = str_split($linkText, 5);
+
+        $part1 = '<a href="ma';
+        $part2 = 'ilto&#58;';
+        $part3 = '" ' . $attrs . ' >';
+        $part4 = '</a>';
+
+        $encoded = '<script type="text/javascript">';
+        $encoded .= "document.write('$part1');";
+        $encoded .= "document.write('$part2');";
+        foreach ($email as $e) {
+            $encoded .= "document.write('$e');";
+        }
+        $encoded .= "document.write('$part3');";
+        foreach ($linkText as $l) {
+            $encoded .= "document.write('$l');";
+        }
+        $encoded .= "document.write('$part4');";
+        $encoded .= '</script>';
+
+        return $encoded;
+    }
+}
+
+if(! function_exists('listDirectory')) {
+    /**
+     * @param $directory
+     * @param array $fileExclusion
+     */
+    function listDirectory($directory, array $fileExclusion = ['.', '..']) {
+        $list = [];
+        if(is_dir($directory))
+        {
+            if($handle = opendir($directory))
+            {
+                while(($file = readdir($handle)) !== false)
+                {
+                    if( !in_array($file, $fileExclusion))
+                    {
+                        $list[] = $directory.$file;
+                    }
+                }
+                closedir($handle);
+            }
+        }
     }
 }
