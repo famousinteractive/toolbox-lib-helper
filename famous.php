@@ -209,3 +209,32 @@ function getIp(){
         }
     }
 }
+
+if (! function_exists('geocode')) {
+    function geocode($address)
+    {
+        $lat = $lng = 0;
+        $url = 'https://maps.googleapis.com/maps/api/geocode/json?address=' . urlencode($address) . '&key=' . env('GOOGLE_KEY');
+        $gps = file_get_contents($url);
+
+
+        if (!empty($gps)) {
+            $gps = json_decode($gps, true);
+
+            try {
+                $lat = $gps['results'][0]['geometry']['location']['lat'];
+                $lng = $gps['results'][0]['geometry']['location']['lng'];
+            } catch (\Exception $e) {
+                \Log::error('Unable to get lat/lng for ' . $address . ' with error ' . $e->getMessage());
+                \Log::error('Raw response from ' . $url . ': ' . json_encode($gps));
+                $lat = 50.8427501;
+                $lng = 4.3515499;
+            }
+        }
+
+        return [
+            'lat' => $lat,
+            'lng' => $lng
+        ];
+    }
+}
